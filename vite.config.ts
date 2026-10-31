@@ -6,6 +6,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig(() => {
   return {
+    base: './',
     plugins: [
       react(),
       tailwindcss(),
@@ -20,7 +21,7 @@ export default defineConfig(() => {
           'version-manifest.json',
         ],
         manifest: {
-          id: '/',
+          id: './',
           name: 'شاهنامه فردوسی: تاج خاکستر و نور | Shahnameh: Crown of Ash & Light',
           short_name: 'شاهنامه',
           description:
@@ -29,23 +30,23 @@ export default defineConfig(() => {
           background_color: '#0c0a09',
           display: 'standalone',
           orientation: 'landscape',
-          start_url: '/',
-          scope: '/',
+          start_url: './',
+          scope: './',
           icons: [
             {
-              src: '/pwa-192x192.png',
+              src: 'pwa-192x192.png',
               sizes: '192x192',
               type: 'image/png',
               purpose: 'any',
             },
             {
-              src: '/pwa-512x512.png',
+              src: 'pwa-512x512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'any',
             },
             {
-              src: '/pwa-maskable-512x512.png',
+              src: 'pwa-maskable-512x512.png',
               sizes: '512x512',
               type: 'image/png',
               purpose: 'maskable',
