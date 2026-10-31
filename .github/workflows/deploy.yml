@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install dependencies (no lockfile required)
-        run: npm install --no-audit --no-fund
+        run: npm install --legacy-peer-deps --no-audit --no-fund
 
       - name: Run TypeScript typecheck
         run: npm run lint
