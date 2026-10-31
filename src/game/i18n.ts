@@ -101,6 +101,7 @@ export interface UIDictionary {
   epochWord: string;
   loadingAssets: string;
   loadingSkip: string;
+  comboLabel: string;
 }
 
 export const DICTIONARY: Record<Language, UIDictionary> = {
@@ -140,7 +141,7 @@ export const DICTIONARY: Record<Language, UIDictionary> = {
     clearTimeLabel: 'زمان نبرد (ثانیه)',
     damageDealtLabel: 'آسیب واردشده',
     alignmentScoreLabel: 'تراز فره و سرنوشت',
-    enemiesSlainLabel: 'دشمنان வீழ்த்த‌شده',
+    enemiesSlainLabel: 'دشمنان از پای درآمده',
     controlsHintDesktop: 'حرکت: کلیدهای جهت‌نما · ضربه سنگین: کلید فاصله · کمند زرین: کلید ۱ · آتش سده: کلید ۲ · جاخالی: کلید ۳ · توقف: کلید گریز',
     controlsHintTouch: 'با اهرم لمسی حرکت کنید و با دکمه‌های رزمی ضربه بزنید',
     skillStrike: 'ضربه سلاح',

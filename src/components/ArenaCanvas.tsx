@@ -31,6 +31,7 @@ export interface LiveHUDTelemetry {
   bossHp: number;
   bossMaxHp: number;
   phase: BattlePhase;
+  comboCount?: number;
   cooldowns: {
     lasso: number;
     fire: number;
@@ -164,7 +165,7 @@ export const ArenaCanvas: React.FC<ArenaCanvasProps> = ({
     });
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.12;
+    renderer.toneMappingExposure = 1.32;
     renderer.setPixelRatio(
       isSoftwareGl ? 1 : Math.min(window.devicePixelRatio, 2),
     );
@@ -191,11 +192,11 @@ export const ArenaCanvas: React.FC<ArenaCanvasProps> = ({
     camera.position.set(0, 14, 18);
     camera.lookAt(0, 1, 0);
 
-    // 2. Studio 3-Point Warm/Cool Lighting Rig
-    const hemiLight = new THREE.HemisphereLight(0x93c5fd, 0x291d12, 0.75);
+    // 2. Studio 3-Point + Rim Warm/Cool Lighting Rig
+    const hemiLight = new THREE.HemisphereLight(0xbfd9ff, 0x3b2614, 1.05);
     scene.add(hemiLight);
 
-    const keyLight = new THREE.DirectionalLight(0xffedd5, 2.2);
+    const keyLight = new THREE.DirectionalLight(0xffedd5, 2.75);
     keyLight.position.set(14, 24, 12);
     keyLight.castShadow = !isSoftwareGl;
     keyLight.shadow.mapSize.set(1024, 1024);
@@ -209,10 +210,14 @@ export const ArenaCanvas: React.FC<ArenaCanvasProps> = ({
     keyLight.shadow.bias = -0.0005;
     scene.add(keyLight);
 
-    const torchLight1 = new THREE.PointLight(0xf97316, 4.5, 18);
-    torchLight1.position.set(-8, 3.2, -6);
-    const torchLight2 = new THREE.PointLight(0xf97316, 4.5, 18);
-    torchLight2.position.set(8, 3.2, -6);
+    const rimLight = new THREE.DirectionalLight(0x60a5fa, 1.35);
+    rimLight.position.set(-12, 16, -15);
+    scene.add(rimLight);
+
+    const torchLight1 = new THREE.PointLight(0xf97316, 6.2, 22);
+    torchLight1.position.set(-8, 3.4, -6);
+    const torchLight2 = new THREE.PointLight(0xf97316, 6.2, 22);
+    torchLight2.position.set(8, 3.4, -6);
     scene.add(torchLight1, torchLight2);
 
     // 3. Arena Ground, Persepolis Columns, Fire Braziers & Natural Rock Perimeter
@@ -226,8 +231,8 @@ export const ArenaCanvas: React.FC<ArenaCanvasProps> = ({
     const floorMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
       map: floorTex,
-      roughness: 0.78,
-      metalness: 0.15,
+      roughness: 0.72,
+      metalness: 0.18,
     });
     const floorMesh = new THREE.Mesh(
       new THREE.CircleGeometry(32, 48),
@@ -239,9 +244,9 @@ export const ArenaCanvas: React.FC<ArenaCanvasProps> = ({
 
     // Golden inlay dueling ring on the basalt floor (offset y = 0.012 to prevent Z-fighting)
     const ringMat = new THREE.MeshStandardMaterial({
-      color: 0xd97706,
-      roughness: 0.3,
-      metalness: 0.85,
+      color: 0xf59e0b,
+      roughness: 0.28,
+      metalness: 0.88,
       polygonOffset: true,
       polygonOffsetFactor: -1,
       polygonOffsetUnits: -1,
@@ -257,13 +262,14 @@ export const ArenaCanvas: React.FC<ArenaCanvasProps> = ({
     // Persepolis Fluted Columns & Fire Temple Braziers around the northern arc
     const colBaseGeo = new THREE.CylinderGeometry(0.75, 0.9, 0.6, 12);
     const colShaftGeo = new THREE.CylinderGeometry(0.52, 0.62, 6.2, 14);
-    const colCapGeo = new THREE.BoxGeometry(1.45, 0.7, 0.85);
+    const colCapGeo = new THREE.BoxGeometry(1.55, 0.75, 0.9);
     const stoneColMat = new THREE.MeshStandardMaterial({
-      color: 0x44403c,
-      roughness: 0.75,
-      metalness: 0.2,
+      color: 0x57534e,
+      roughness: 0.68,
+      metalness: 0.25,
     });
     const flameMat = new THREE.MeshBasicMaterial({ color: 0xf97316 });
+    const flameCones: THREE.Mesh[] = [];
 
     for (let i = 0; i < 6; i++) {
       const angle = Math.PI + ((i - 2.5) / 5) * 2.1;
@@ -289,10 +295,11 @@ export const ArenaCanvas: React.FC<ArenaCanvasProps> = ({
         );
         brazierBowl.position.set(0, 0.6, 1.4);
         const flameCone = new THREE.Mesh(
-          new THREE.ConeGeometry(0.42, 0.95, 8),
+          new THREE.ConeGeometry(0.45, 1.15, 8),
           flameMat,
         );
-        flameCone.position.set(0, 1.45, 1.4);
+        flameCone.position.set(0, 1.5, 1.4);
+        flameCones.push(flameCone);
         colGroup.add(brazierBowl, flameCone);
       }
 
@@ -304,8 +311,8 @@ export const ArenaCanvas: React.FC<ArenaCanvasProps> = ({
     const cragGeo = new THREE.DodecahedronGeometry(2.2, 0);
     const cragMat = new THREE.MeshStandardMaterial({
       color: 0x292524,
-      roughness: 0.9,
-      metalness: 0.1,
+      roughness: 0.85,
+      metalness: 0.12,
     });
     const cragInstanced = new THREE.InstancedMesh(cragGeo, cragMat, cragCount);
     for (let i = 0; i < cragCount; i++) {
@@ -370,7 +377,21 @@ export const ArenaCanvas: React.FC<ArenaCanvasProps> = ({
     const actorsGroup = new THREE.Group();
     scene.add(actorsGroup);
 
-    // Skill Visual FX (Golden Lasso Ring & Sadeh Fire Wave)
+    // Skill Visual FX (Weapon Slash Crescent, Golden Lasso Ring & Sadeh Fire Wave)
+    const slashArcGeo = new THREE.RingGeometry(1.1, 2.75, 24, 1, -Math.PI * 0.42, Math.PI * 0.84);
+    slashArcGeo.rotateX(-Math.PI / 2);
+    const slashArcMesh = new THREE.Mesh(
+      slashArcGeo,
+      new THREE.MeshBasicMaterial({
+        color: 0xfbbf24,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 0,
+      }),
+    );
+    slashArcMesh.position.y = 1.05;
+    scene.add(slashArcMesh);
+
     const lassoFxMesh = new THREE.Mesh(
       new THREE.TorusGeometry(2.6, 0.08, 8, 28),
       new THREE.MeshBasicMaterial({
@@ -415,8 +436,11 @@ export const ArenaCanvas: React.FC<ArenaCanvasProps> = ({
       lassoCd: 0,
       fireCd: 0,
       dodgeCd: 0,
+      slashFxTimer: 0,
       lassoFxTimer: 0,
       fireFxTimer: 0,
+      comboCount: 0,
+      comboTimer: 0,
     };
 
     let enemies: EnemyEntity[] = [];
@@ -734,7 +758,12 @@ export const ArenaCanvas: React.FC<ArenaCanvasProps> = ({
             enemy.hp = Math.max(0, enemy.hp - dmg);
             enemy.hitFlashTimer = 0.12;
             runStats.damageDealt += dmg;
-            playerState.farr = Math.min(100, playerState.farr + 8);
+            playerState.comboCount += 1;
+            playerState.comboTimer = 2.8;
+            playerState.farr = Math.min(
+              100,
+              playerState.farr + 8 + Math.min(6, playerState.comboCount),
+            );
 
             // Knockback impulse along weapon strike vector
             const kx = dist > 0.01 ? dx / dist : dirX;
@@ -779,6 +808,16 @@ export const ArenaCanvas: React.FC<ArenaCanvasProps> = ({
       const dt = Math.min(Math.max(rawDt, 0.001), 0.05);
       elapsedTime += dt;
 
+      // Animate flickering Persepolis fire braziers & torch lights
+      const flicker = 1 + Math.sin(elapsedTime * 11.5) * 0.12 + Math.cos(elapsedTime * 19.3) * 0.08;
+      torchLight1.intensity = 6.0 * flicker;
+      torchLight2.intensity = 6.0 * (2 - flicker);
+      for (let i = 0; i < flameCones.length; i++) {
+        const fc = flameCones[i];
+        const s = 0.92 + Math.sin(elapsedTime * 13 + i * 2.1) * 0.16;
+        fc.scale.set(1, s, 1);
+      }
+
       const curProps = propsRef.current;
       const targetEpochKey = `${curProps.epochId}-${curProps.faction}`;
       if (targetEpochKey !== currentBuiltEpochKey) {
@@ -814,6 +853,17 @@ export const ArenaCanvas: React.FC<ArenaCanvasProps> = ({
             0,
           );
         }
+        for (let i = 0; i < enemies.length; i++) {
+          updateCharacterRigAnimation(
+            enemies[i].rig,
+            0,
+            false,
+            0,
+            0.45,
+            elapsedTime + i * 0.9,
+            0,
+          );
+        }
       } else if (
         curProps.gameState === 'playing' &&
         curProps.battlePhase !== 'crossroads'
@@ -828,7 +878,7 @@ export const ArenaCanvas: React.FC<ArenaCanvasProps> = ({
 
         const simDt = hitstopTimer > 0 ? dt * 0.08 : dt;
 
-        // Cooldowns
+        // Cooldowns & Combo decay
         playerState.lassoCd = Math.max(0, playerState.lassoCd - simDt);
         playerState.fireCd = Math.max(0, playerState.fireCd - simDt);
         playerState.dodgeCd = Math.max(0, playerState.dodgeCd - simDt);
@@ -837,8 +887,21 @@ export const ArenaCanvas: React.FC<ArenaCanvasProps> = ({
           0,
           playerState.hitFlashTimer - dt,
         );
+        playerState.slashFxTimer = Math.max(0, playerState.slashFxTimer - dt);
         playerState.lassoFxTimer = Math.max(0, playerState.lassoFxTimer - dt);
         playerState.fireFxTimer = Math.max(0, playerState.fireFxTimer - dt);
+        if (playerState.comboTimer > 0) {
+          playerState.comboTimer = Math.max(0, playerState.comboTimer - simDt);
+          if (playerState.comboTimer === 0) {
+            playerState.comboCount = 0;
+          }
+        }
+
+        slashArcMesh.position.set(playerState.x, 1.05, playerState.z);
+        slashArcMesh.rotation.y = playerState.facingAngle - Math.PI / 2;
+        (slashArcMesh.material as THREE.MeshBasicMaterial).opacity =
+          playerState.slashFxTimer * 3.8;
+        slashArcMesh.scale.setScalar(1 + (0.22 - playerState.slashFxTimer) * 1.2);
 
         lassoFxMesh.position.set(playerState.x, 0.8, playerState.z);
         (lassoFxMesh.material as THREE.MeshBasicMaterial).opacity =
@@ -904,6 +967,7 @@ export const ArenaCanvas: React.FC<ArenaCanvasProps> = ({
 
         if (wantStrike && playerState.attackTimer <= 0.04) {
           playerState.attackTimer = playerState.attackDuration;
+          playerState.slashFxTimer = 0.22;
           executePlayerStrike(3.4, 28, false);
         }
 
@@ -1038,6 +1102,7 @@ export const ArenaCanvas: React.FC<ArenaCanvasProps> = ({
                 );
                 playerState.hp = Math.max(0, playerState.hp - dmg);
                 playerState.hitFlashTimer = 0.14;
+                playerState.comboCount = 0;
                 cameraTrauma = Math.min(1, cameraTrauma + 0.35);
                 addBloodAndGore(
                   playerState.x,
@@ -1164,6 +1229,7 @@ export const ArenaCanvas: React.FC<ArenaCanvasProps> = ({
             bossHp: bossEntity ? bossEntity.hp : 0,
             bossMaxHp: bossEntity ? bossEntity.maxHp : 250,
             phase: curProps.battlePhase,
+            comboCount: playerState.comboCount,
             cooldowns: {
               lasso: playerState.lassoCd,
               fire: playerState.fireCd,

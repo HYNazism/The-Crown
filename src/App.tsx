@@ -161,9 +161,40 @@ function ShahnamehLoadingOverlay({
   );
 }
 
+const PREFS_STORAGE_KEY = 'shahnameh_prefs_v1';
+const CAMPAIGN_STORAGE_KEY = 'shahnameh_campaign_v1';
+
 export default function App() {
-  const [lang, setLang] = useState<Language>('fa');
-  const [settings, setSettings] = useState<GameSettings>(DEFAULT_SETTINGS);
+  const [lang, setLang] = useState<Language>(() => {
+    try {
+      const saved = window.localStorage.getItem(PREFS_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.lang === 'fa' || parsed.lang === 'fa_old' || parsed.lang === 'en') {
+          return parsed.lang;
+        }
+      }
+    } catch {
+      // Ignore storage errors
+    }
+    return 'fa';
+  });
+
+  const [settings, setSettings] = useState<GameSettings>(() => {
+    try {
+      const saved = window.localStorage.getItem(PREFS_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.settings && typeof parsed.settings === 'object') {
+          return { ...DEFAULT_SETTINGS, ...parsed.settings };
+        }
+      }
+    } catch {
+      // Ignore storage errors
+    }
+    return DEFAULT_SETTINGS;
+  });
+
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const [isBooting, setIsBooting] = useState<boolean>(() => {
@@ -189,9 +220,47 @@ export default function App() {
     };
   }, [isBooting]);
 
-  const [campaign, setCampaign] = useState<CampaignState>(() =>
-    createInitialCampaignState('asha'),
-  );
+  const [campaign, setCampaign] = useState<CampaignState>(() => {
+    try {
+      const saved = window.localStorage.getItem(CAMPAIGN_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (
+          parsed &&
+          typeof parsed.currentEpochId === 'number' &&
+          parsed.currentEpochId >= 1 &&
+          parsed.currentEpochId <= 12
+        ) {
+          return { ...createInitialCampaignState('asha'), ...parsed };
+        }
+      }
+    } catch {
+      // Ignore storage errors
+    }
+    return createInitialCampaignState('asha');
+  });
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        PREFS_STORAGE_KEY,
+        JSON.stringify({ lang, settings }),
+      );
+    } catch {
+      // Ignore storage errors
+    }
+  }, [lang, settings]);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(
+        CAMPAIGN_STORAGE_KEY,
+        JSON.stringify(campaign),
+      );
+    } catch {
+      // Ignore storage errors
+    }
+  }, [campaign]);
 
   const [gameState, setGameState] = useState<
     'title' | 'playing' | 'paused' | 'gameover'
@@ -218,6 +287,7 @@ export default function App() {
     bossHp: 250,
     bossMaxHp: 250,
     phase: 'vanguard',
+    comboCount: 0,
     cooldowns: { lasso: 0, fire: 0, dodge: 0 },
     stats: { clearTimeSec: 0, damageDealt: 0, enemiesSlain: 0 },
   });
@@ -665,6 +735,14 @@ export default function App() {
                   {formatNum(campaign.iranshahrStability, lang)}
                   {lang === 'en' ? '%' : '٪'}
                 </span>
+                {telemetry.comboCount && telemetry.comboCount >= 2 ? (
+                  <>
+                    <span>·</span>
+                    <span className="text-amber-400 font-extrabold">
+                      {t.comboLabel}: ×{formatNum(telemetry.comboCount, lang)}
+                    </span>
+                  </>
+                ) : null}
               </div>
             </div>
 
