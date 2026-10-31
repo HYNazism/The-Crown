@@ -1,0 +1,9 @@
+{
+  "appId": "com.shahnameh.crownofash",
+  "appName": "Shahnameh Crown of Ash and Light",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}

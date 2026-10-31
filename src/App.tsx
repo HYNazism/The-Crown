@@ -5,6 +5,7 @@ import {
   VirtualControlState,
 } from './components/ArenaCanvas';
 import { DestinyScrollModal } from './components/DestinyScrollModal';
+import { ReleaseDownloadsModal } from './components/ReleaseDownloadsModal';
 import { SettingsModal } from './components/SettingsModal';
 import { TouchControls } from './components/TouchControls';
 import { usePWAInstall } from './components/usePWAInstall';
@@ -196,6 +197,7 @@ export default function App() {
   });
 
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [releasesOpen, setReleasesOpen] = useState(false);
 
   const [isBooting, setIsBooting] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
@@ -490,6 +492,20 @@ export default function App() {
                     <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
                   </svg>
                 )}
+              </button>
+
+              <button
+                type="button"
+                aria-label={t.releasesButton}
+                onClick={() => setReleasesOpen(true)}
+                className="px-2.5 h-9 rounded-lg border border-amber-700/60 bg-stone-950/90 hover:bg-stone-900 flex items-center gap-1.5 text-amber-300 text-xs font-bold cursor-pointer"
+              >
+                <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                <span className="hidden sm:inline">{t.releasesButton}</span>
               </button>
 
               <button
@@ -1008,7 +1024,7 @@ export default function App() {
       )}
 
       {/* =====================================================================
-          6. REAL IN-GAME SETTINGS MODAL
+          6. REAL IN-GAME SETTINGS & RELEASE DOWNLOADS MODALS
          ===================================================================== */}
       <SettingsModal
         isOpen={settingsOpen}
@@ -1017,6 +1033,12 @@ export default function App() {
         onChangeLang={setLang}
         onChangeSettings={setSettings}
         onClose={() => setSettingsOpen(false)}
+      />
+
+      <ReleaseDownloadsModal
+        isOpen={releasesOpen}
+        lang={lang}
+        onClose={() => setReleasesOpen(false)}
       />
     </main>
   );

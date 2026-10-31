@@ -98,5 +98,15 @@
   ],
   "integritySha256": "0eb6963bdcc4799e",
   "totalEpochs": 12,
-  "buildReady": true
+  "buildReady": true,
+  "releaseTag": "v12.0.0",
+  "releaseAssets": {
+    "androidApk": "Shahnameh-Crown-of-Ash-and-Light-android.apk",
+    "windowsExe": "Shahnameh-Crown-of-Ash-and-Light-windows-x64.exe",
+    "windowsPortableZip": "Shahnameh-Crown-of-Ash-and-Light-windows-x64-portable.zip",
+    "linuxTarGz": "Shahnameh-Crown-of-Ash-and-Light-linux-x64.tar.gz",
+    "macosZip": "Shahnameh-Crown-of-Ash-and-Light-macos-x64.zip",
+    "webPwaZip": "Shahnameh-Crown-of-Ash-and-Light-web-pwa.zip",
+    "checksumsTxt": "SHA256SUMS.txt"
+  }
 }

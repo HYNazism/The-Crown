@@ -1,22 +1,27 @@
-name: Deploy Shahnameh PWA to GitHub Pages
+name: Multi-Platform Release (APK, EXE, Desktop & GitHub Pages)
 
 on:
   push:
     branches:
       - main
       - master
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: "shahnameh-release-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
+  # ===========================================================================
+  # 1. VERIFY, TEST & BUILD CORE WEBGL / PWA BUNDLE
+  # ===========================================================================
   build:
     name: Test & Build PWA Bundle
     runs-on: ubuntu-24.04
@@ -42,13 +47,28 @@ jobs:
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload PWA build artifact
+      - name: Upload PWA build artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
 
-  deploy:
-    name: Deploy to GitHub Pages
+      - name: Upload compiled dist artifact for Native Packagers
+        uses: actions/upload-artifact@v4
+        with:
+          name: shahnameh-web-dist
+          path: |
+            dist/
+            public/version-manifest.json
+            electron/
+            capacitor.config.json
+            package.json
+
+  # ===========================================================================
+  # 2. DEPLOY LIVE PWA GAME TO GITHUB PAGES
+  # ===========================================================================
+  deploy-pages:
+    name: Deploy Live PWA to GitHub Pages
+    if: github.event_name != 'pull_request'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -58,3 +78,132 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  # ===========================================================================
+  # 3. PACKAGE ANDROID (.APK), WINDOWS (.EXE), LINUX, MACOS & PUBLISH RELEASE
+  # ===========================================================================
+  release-packages:
+    name: Package APK, EXE & Publish GitHub Release
+    runs-on: ubuntu-24.04
+    needs: build
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download compiled web dist
+        uses: actions/download-artifact@v4
+        with:
+          name: shahnameh-web-dist
+
+      - name: Setup Java 21 for Android APK Gradle Build
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Prepare release output directory
+        run: |
+          mkdir -p release-assets
+          cp public/version-manifest.json release-assets/version-manifest.json
+          cd dist && zip -r ../release-assets/Shahnameh-Crown-of-Ash-and-Light-web-pwa.zip . && cd ..
+
+      - name: Build Standalone Android APK (Capacitor + Gradle)
+        run: |
+          mkdir -p android-build
+          cp -r dist android-build/dist
+          cp capacitor.config.json android-build/capacitor.config.json
+          cd android-build
+          npm init -y
+          npm install --no-audit --no-fund @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
+          npx cap add android
+          npx cap sync android
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk ../../release-assets/Shahnameh-Crown-of-Ash-and-Light-android.apk
+          cd ../..
+
+      - name: Build Windows (.exe & Portable .zip), Linux (.tar.gz) & macOS (.zip) Desktop Packages
+        run: |
+          mkdir -p desktop-build/dist desktop-build/electron
+          cp -r dist/* desktop-build/dist/
+          cp electron/main.cjs desktop-build/electron/main.cjs
+          cat << 'EOF' > desktop-build/package.json
+          {
+            "name": "shahnameh-crown-of-ash-and-light",
+            "productName": "Shahnameh-Crown-of-Ash-and-Light",
+            "version": "12.0.0",
+            "description": "Shahnameh of Ferdowsi: Crown of Ash & Light — Dark-Epic 3D/2D Action-RPG",
+            "main": "electron/main.cjs",
+            "author": "Shahnameh Project",
+            "license": "MIT"
+          }
+          EOF
+          cd desktop-build
+          npm install --no-audit --no-fund --save-dev electron@33 @electron/packager@18
+          npx @electron/packager . Shahnameh --platform=win32 --arch=x64 --out=out --overwrite
+          npx @electron/packager . Shahnameh --platform=linux --arch=x64 --out=out --overwrite
+          npx @electron/packager . Shahnameh --platform=darwin --arch=x64 --out=out --overwrite
+          cp out/Shahnameh-win32-x64/Shahnameh.exe ../release-assets/Shahnameh-Crown-of-Ash-and-Light-windows-x64.exe
+          cd out/Shahnameh-win32-x64 && zip -r ../../../release-assets/Shahnameh-Crown-of-Ash-and-Light-windows-x64-portable.zip . && cd ../..
+          cd out && tar -czf ../../release-assets/Shahnameh-Crown-of-Ash-and-Light-linux-x64.tar.gz Shahnameh-linux-x64 && cd ..
+          cd out && zip -ry ../../release-assets/Shahnameh-Crown-of-Ash-and-Light-macos-x64.zip Shahnameh-darwin-x64 && cd ..
+          cd ..
+
+      - name: Generate SHA-256 Checksums & Bilingual Release Notes
+        id: meta
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          else
+            TAG="v${VERSION}"
+          fi
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+          cd release-assets
+          sha256sum * > SHA256SUMS.txt
+          cd ..
+
+          cat << EOF > release-assets/RELEASE_NOTES.md
+          ## شاهنامه فردوسی: تاج خاکستر و نور — نسخه ${TAG}
+          ## Shahnameh of Ferdowsi: Crown of Ash & Light — Release ${TAG}
+
+          ### 📦 فایل‌های قابل دریافت (Downloadable Packages)
+          - **Android (`.apk`)**: \`Shahnameh-Crown-of-Ash-and-Light-android.apk\` (نصب مستقیم روی گوشی و تبلت اندروید)
+          - **Windows Portable (`.zip` / `.exe`)**: \`Shahnameh-Crown-of-Ash-and-Light-windows-x64-portable.zip\` & \`Shahnameh-Crown-of-Ash-and-Light-windows-x64.exe\`
+          - **Linux Desktop (`.tar.gz`)**: \`Shahnameh-Crown-of-Ash-and-Light-linux-x64.tar.gz\`
+          - **macOS Desktop (`.zip`)**: \`Shahnameh-Crown-of-Ash-and-Light-macos-x64.zip\`
+          - **Standalone Offline Web / PWA (`.zip`)**: \`Shahnameh-Crown-of-Ash-and-Light-web-pwa.zip\`
+          - **Checksums & Manifest**: \`SHA256SUMS.txt\` & \`version-manifest.json\`
+
+          ---
+
+          ### ⚔️ ویژگی‌های نسخه ${TAG} (Highlights)
+          - پوشش کامل هر **۱۲ عصر شاهنامه فردوسی** (از کیومرث و سیامک تا رستم دستان، سیاوش، اسفندیار و حکیم فردوسی)
+          - سیستم انتخاب جبهه (**فروغ اشه** در برابر **خشم اهریمن**) با وارونگی کامل کاراکترها و باس‌های ۱ به ۱
+          - فیزیک برداری خون شریانی، قطع عضو در ضربات تمام‌کننده و تغییر آنی دوربین سه‌بعدی و دوبعدی نگارگری
+          EOF
+
+      - name: Create or Update GitHub Release with All Platform Packages
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          name: "شاهنامه فردوسی: تاج خاکستر و نور | Shahnameh ${{ steps.meta.outputs.tag }}"
+          body_path: release-assets/RELEASE_NOTES.md
+          draft: false
+          prerelease: false
+          make_latest: true
+          files: |
+            release-assets/Shahnameh-Crown-of-Ash-and-Light-android.apk
+            release-assets/Shahnameh-Crown-of-Ash-and-Light-windows-x64.exe
+            release-assets/Shahnameh-Crown-of-Ash-and-Light-windows-x64-portable.zip
+            release-assets/Shahnameh-Crown-of-Ash-and-Light-linux-x64.tar.gz
+            release-assets/Shahnameh-Crown-of-Ash-and-Light-macos-x64.zip
+            release-assets/Shahnameh-Crown-of-Ash-and-Light-web-pwa.zip
+            release-assets/version-manifest.json
+            release-assets/SHA256SUMS.txt

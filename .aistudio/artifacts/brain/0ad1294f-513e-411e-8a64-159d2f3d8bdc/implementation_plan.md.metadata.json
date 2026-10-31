@@ -1,0 +1,6 @@
+{
+  "summary":  "Implementation plan for automated multi-platform GitHub Actions releases (Android APK, Windows EXE, Linux/macOS Desktop, PWA ZIP, SHA-256 checksums, and GitHub Pages deployment) triggered on pushes to main and version tags.",
+  "updatedAt":  "2026-10-31T16:28:09.252383500Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}
