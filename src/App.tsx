@@ -20,10 +20,174 @@ import {
   resolveEpochRoles,
 } from './game/rules';
 
+interface ShahnamehLoadingOverlayProps {
+  lang: Language;
+  progress: number;
+  onDismiss: () => void;
+}
+
+function ShahnamehLoadingOverlay({
+  lang,
+  progress,
+  onDismiss,
+}: ShahnamehLoadingOverlayProps) {
+  const t = DICTIONARY[lang];
+  const percentSymbol = lang === 'en' ? '%' : '٪';
+
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      onClick={onDismiss}
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center p-6 bg-stone-950/95 backdrop-blur-md transition-opacity duration-300 cursor-pointer"
+    >
+      {/* Custom Shahnameh Branded Spinner (12-Epoch Sun Wheel + Royal Kayani Crown) */}
+      <div className="relative w-32 h-32 sm:w-36 sm:h-36 flex items-center justify-center mb-6">
+        {/* Outer rotating 12-Epoch Sassanid Ring */}
+        <svg
+          className="absolute inset-0 w-full h-full animate-spin text-amber-500/85"
+          style={{ animationDuration: '9s' }}
+          viewBox="0 0 120 120"
+          fill="none"
+        >
+          <circle
+            cx="60"
+            cy="60"
+            r="54"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeDasharray="8 6"
+          />
+          <circle
+            cx="60"
+            cy="60"
+            r="46"
+            stroke="#dc2626"
+            strokeOpacity="0.65"
+            strokeWidth="1.5"
+          />
+          {Array.from({ length: 12 }).map((_, idx) => {
+            const angle = (idx * 30 * Math.PI) / 180;
+            const x1 = 60 + Math.cos(angle) * 46;
+            const y1 = 60 + Math.sin(angle) * 46;
+            const x2 = 60 + Math.cos(angle) * 56;
+            const y2 = 60 + Math.sin(angle) * 56;
+            return (
+              <line
+                key={idx}
+                x1={x1}
+                y1={y1}
+                x2={x2}
+                y2={y2}
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+              />
+            );
+          })}
+        </svg>
+
+        {/* Inner counter-rotating Lapis/Gold Octagram */}
+        <svg
+          className="absolute inset-3 w-[calc(100%-1.5rem)] h-[calc(100%-1.5rem)] animate-spin text-amber-400/60"
+          style={{ animationDuration: '5s', animationDirection: 'reverse' }}
+          viewBox="0 0 100 100"
+          fill="none"
+        >
+          <rect
+            x="22"
+            y="22"
+            width="56"
+            height="56"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          />
+          <rect
+            x="22"
+            y="22"
+            width="56"
+            height="56"
+            transform="rotate(45 50 50)"
+            stroke="#f59e0b"
+            strokeWidth="1.5"
+          />
+        </svg>
+
+        {/* Central Kayani Crown & Simurgh Emblem */}
+        <svg
+          className="relative w-14 h-14 text-amber-400 drop-shadow-[0_0_12px_rgba(245,158,11,0.65)] animate-pulse"
+          viewBox="0 0 64 64"
+          fill="none"
+        >
+          <path
+            d="M10 46L14 22L26 32L32 14L38 32L50 22L54 46H10Z"
+            fill="#b45309"
+            stroke="#fde68a"
+            strokeWidth="2.5"
+            strokeLinejoin="round"
+          />
+          <circle cx="32" cy="12" r="3" fill="#fef08a" />
+          <circle cx="14" cy="20" r="2.5" fill="#ef4444" />
+          <circle cx="50" cy="20" r="2.5" fill="#ef4444" />
+          <circle cx="32" cy="36" r="3.5" fill="#dc2626" />
+          <rect x="10" y="48" width="44" height="5" rx="2" fill="#fbbf24" />
+        </svg>
+      </div>
+
+      {/* Branded Title & Subtitle */}
+      <h1 className="text-2xl sm:text-3xl font-extrabold text-amber-300 tracking-wide text-center mb-1">
+        {t.gameTitle}
+      </h1>
+      <p className="text-xs sm:text-sm font-bold text-amber-500/90 mb-5 text-center">
+        {t.gameSubtitle}
+      </p>
+
+      {/* Progress Bar & Localized Percentage */}
+      <div className="w-64 sm:w-80 bg-stone-900 border border-amber-700/60 rounded-full h-2.5 overflow-hidden mb-2.5 shadow-inner">
+        <div
+          className="h-full bg-gradient-to-r from-red-700 via-amber-500 to-amber-300 transition-all duration-150"
+          style={{ width: `${Math.min(100, Math.max(10, progress))}%` }}
+        />
+      </div>
+
+      <div className="flex items-center gap-3 text-xs text-stone-300 font-semibold">
+        <span>{t.loadingAssets}</span>
+        <span className="text-amber-400 font-extrabold tabular-nums">
+          {formatNum(progress, lang)}
+          {percentSymbol}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [lang, setLang] = useState<Language>('fa');
   const [settings, setSettings] = useState<GameSettings>(DEFAULT_SETTINGS);
   const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const [isBooting, setIsBooting] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('autostart') === '1' || params.get('skipIntro') === '1') {
+        return false;
+      }
+    }
+    return true;
+  });
+  const [bootProgress, setBootProgress] = useState<number>(20);
+
+  useEffect(() => {
+    if (!isBooting) return;
+    const step1 = window.setTimeout(() => setBootProgress(65), 140);
+    const step2 = window.setTimeout(() => setBootProgress(100), 320);
+    const done = window.setTimeout(() => setIsBooting(false), 480);
+    return () => {
+      window.clearTimeout(step1);
+      window.clearTimeout(step2);
+      window.clearTimeout(done);
+    };
+  }, [isBooting]);
 
   const [campaign, setCampaign] = useState<CampaignState>(() =>
     createInitialCampaignState('asha'),
@@ -91,6 +255,7 @@ export default function App() {
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
+    setIsBooting(false);
     document.body.dataset.state = 'playing';
     setBattlePhase('vanguard');
     setGameState('playing');
@@ -166,6 +331,15 @@ export default function App() {
       dir={isRtl ? 'rtl' : 'ltr'}
       className="relative w-screen h-screen overflow-hidden select-none bg-stone-950 text-amber-50"
     >
+      {/* Shahnameh Branded Initial PWA Loading Overlay */}
+      {isBooting && (
+        <ShahnamehLoadingOverlay
+          lang={lang}
+          progress={bootProgress}
+          onDismiss={() => setIsBooting(false)}
+        />
+      )}
+
       {/* Full-Viewport 3D/2D WebGL Arena Canvas */}
       <ArenaCanvas
         key={runResetCounter}

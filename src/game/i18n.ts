@@ -99,6 +99,8 @@ export interface UIDictionary {
   commanderRoleLabel: string;
   bossOpponentLabel: string;
   epochWord: string;
+  loadingAssets: string;
+  loadingSkip: string;
 }
 
 export const DICTIONARY: Record<Language, UIDictionary> = {
@@ -179,6 +181,8 @@ export const DICTIONARY: Record<Language, UIDictionary> = {
     commanderRoleLabel: 'کاراکتر شما',
     bossOpponentLabel: 'حریف پایانی (۱ به ۱)',
     epochWord: 'عصر',
+    loadingAssets: 'آماده‌سازی رزمگاه و طومارهای شاهنامه...',
+    loadingSkip: 'ورود به تالار',
   },
   fa_old: {
     gameTitle: 'شاهنامه حکیم فردوسی',
@@ -257,6 +261,8 @@ export const DICTIONARY: Record<Language, UIDictionary> = {
     commanderRoleLabel: 'یل میدان (شما)',
     bossOpponentLabel: 'هماورد پایانی (۱ به ۱)',
     epochWord: 'روزگار',
+    loadingAssets: 'آراستن رزمگاه و گشودن طومار شاهنامه...',
+    loadingSkip: 'ورود به ایوان',
   },
   en: {
     gameTitle: 'SHAHNAMEH OF FERDOWSI',
@@ -335,5 +341,7 @@ export const DICTIONARY: Record<Language, UIDictionary> = {
     commanderRoleLabel: 'Your Champion',
     bossOpponentLabel: '1v1 Boss Opponent',
     epochWord: 'Epoch',
+    loadingAssets: 'Forging the Arena & Unfurling the Scrolls of Shahnameh...',
+    loadingSkip: 'Enter Hall',
   },
 };
