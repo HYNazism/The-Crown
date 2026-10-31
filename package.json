@@ -1,13 +1,17 @@
 {
-  "name": "react-example",
+  "name": "shahnameh-crown-of-ash-and-light",
   "private": true,
-  "version": "0.0.0",
+  "version": "12.0.0",
+  "description": "شاهنامه فردوسی: تاج خاکستر و نور | Shahnameh of Ferdowsi: Crown of Ash & Light — Dark-Epic 3D/2D Action-RPG across all 12 Epochs",
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
     "build": "vite build",
     "preview": "vite preview",
-    "clean": "rm -rf dist server.js",
+    "test": "tsx --test src/game/rules.test.ts",
+    "release:manifest": "node scripts/update-manifest.mjs",
+    "verify": "npm run lint && npm run test && npm run build",
+    "clean": "rm -rf dist dev-dist server.js",
     "lint": "tsc --noEmit"
   },
   "dependencies": {
