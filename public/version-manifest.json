@@ -1,0 +1,23 @@
+{
+  "gameTitle": "Shahnameh of Ferdowsi: Crown of Ash & Light",
+  "gameTitleFa": "شاهنامه فردوسی: تاج خاکستر و نور",
+  "currentVersion": "12.0.0-production",
+  "schemaVersion": "2.0",
+  "releaseChannel": "stable",
+  "architecture": "modular-progressive-12-epochs",
+  "supportedPlatforms": ["web-pwa", "desktop-webgl", "mobile-touch"],
+  "versions": [
+    { "version": "1.0.0", "epoch": 1, "code": "KEYUMARS_ALBORZ", "titleFa": "پادشاهی کیومرث و تخت پلنگینه البرز", "titleEn": "Keyumars & The Leopard Throne of Alborz" },
+    { "version": "2.0.0", "epoch": 2, "code": "SIAMAK_VENGEANCE", "titleFa": "رزم سیامک و کین‌خواهی در البرزکوه", "titleEn": "Siamak's Vengeance at Mount Alborz" },
+    { "version": "3.0.0", "epoch": 3, "code": "HUSHANG_SADEH", "titleFa": "هوشنگ، کشف آتش و جشن سده", "titleEn": "Hushang, Discovery of Fire & Feast of Sadeh" },
+    { "version": "4.0.0", "epoch": 4, "code": "TAHMURAS_DIVBAND", "titleFa": "طهمورث دیوبند و راز کمند زرین", "titleEn": "Tahmuras the Demon-Binder & The Golden Lasso" },
+    { "version": "5.0.0", "epoch": 5, "code": "KAVEH_ZAHHAK", "titleFa": "جمشید، ضحاک ماردوش و قیام کاوه آهنگر", "titleEn": "Jamshid, Zahhak & Kaveh's Uprising" },
+    { "version": "6.0.0", "epoch": 6, "code": "FEREYDUN_DAMAVAND", "titleFa": "فریدون فرخ، گرز گاوسار و دماوند", "titleEn": "Fereydun, Bull-Headed Mace & Mount Damavand" },
+    { "version": "7.0.0", "epoch": 7, "code": "ROSTAM_SEVEN_LABORS", "titleFa": "زال، سیمرغ و هفت‌خوان رستم", "titleEn": "Zal, Simorgh & The Seven Labors of Rostam" },
+    { "version": "8.0.0", "epoch": 8, "code": "ROSTAM_SOHRAB", "titleFa": "تراژدی رستم و سهراب", "titleEn": "The Tragedy of Rostam and Sohrab" },
+    { "version": "9.0.0", "epoch": 9, "code": "SIAVASH_FIRE", "titleFa": "گذر سیاوش از آتش و کین‌خواهی کیخسرو", "titleEn": "Siavash's Ordeal of Fire & Kay Khosrow's Vengeance" },
+    { "version": "10.0.0", "epoch": 10, "code": "ROSTAM_ESFANDIYAR", "titleFa": "نبرد رستم و اسفندیار روئین‌تن", "titleEn": "Rostam vs. Esfandiyar the Brazen-Bodied" },
+    { "version": "11.0.0", "epoch": 11, "code": "SHAGHAD_KABUL", "titleFa": "نیرنگ شغاد و آخرین تیر رستم", "titleEn": "Shaghad's Treachery & Rostam's Final Arrow" },
+    { "version": "12.0.0", "epoch": 12, "code": "FERDOWSI_IMMORTAL", "titleFa": "رستم فرخزاد، حکیم فردوسی و جاودانگی شاهنامه", "titleEn": "Rostam Farrokhzad, Ferdowsi & Immortal Shahnameh" }
+  ]
+}

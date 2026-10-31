@@ -1,0 +1,6 @@
+{
+  "name": "شاهنامه فردوسی: تاج خاکستر و نور | Shahnameh: Crown of Ash & Light",
+  "description": "بازی اکشن-نقش‌آفرینی و رزمی تاریک و حماسی بر پایه دوازده عصر شاهنامه حکیم ابوالقاسم فردوسی با انتخاب جبهه خیر و شر و نبرد تن‌به‌تن باس‌ها.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
