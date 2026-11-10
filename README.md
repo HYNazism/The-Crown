@@ -1,3 +1,11 @@
+## Verified release assets / فایل‌های انتشار بررسی‌شده
+
+The published [`v12.0.0` release](https://github.com/HYNazism/The-Crown/releases/tag/v12.0.0) contains a Windows x64 `.exe` and portable `.zip`, Android `.apk`, Linux `.tar.gz`, macOS `.zip`, and a Web/PWA `.zip`, plus a checksum file and version manifest. This release does **not** contain a Linux `.AppImage` or macOS `.dmg`. The web ZIP is a site bundle, not an installer.
+
+انتشار فعلی [`v12.0.0`](https://github.com/HYNazism/The-Crown/releases/tag/v12.0.0) شامل فایل اجرایی و ZIP قابل‌حمل Windows، فایل نصب Android (`.apk`)، آرشیو Linux (`.tar.gz`)، آرشیو macOS (`.zip`) و ZIP وب/PWA به‌همراه فایل checksum و مانیفست نسخه است. در این انتشار فایل Linux با پسوند `.AppImage` یا بستهٔ macOS با پسوند `.dmg` وجود ندارد. ZIP وب باندل سایت است و نصاب نیست.
+
+---
+
 ## English
 
 ### Download guide
