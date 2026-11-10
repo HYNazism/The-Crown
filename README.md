@@ -1,13 +1,11 @@
 
 
----
+### راهنمای دریافت نسخه‌ها (فارسی)
 
-## 7. Downloading released builds
+- [صفحهٔ انتشارهای GitHub](https://github.com/HYNazism/The-Crown/releases/latest) را باز کنید و فایل‌های پیوست‌شده به نسخهٔ موردنظر را ببینید.
+- **Android:** فایل `.apk` بستهٔ نصب مستقیم است.
+- **Windows:** گردش‌کار یک فایل اجرایی `.exe` و یک آرشیو قابل‌حمل `.zip` می‌سازد. فایل Electron با فایل‌های runtime همراه اجرا می‌شود؛ `.exe` به‌تنهایی نصاب مستقل نیست. برای دریافت کامل برنامه، آرشیو قابل‌حمل را استخراج کنید.
+- **Linux و macOS:** آرشیو همان پلتفرم را کامل استخراج کنید و سپس برنامه را اجرا کنید.
+- **وب/PWA:** فایل ZIP وب، باندل سایت است و نصاب دسکتاپ یا موبایل نیست.
 
-- [Open GitHub Releases](https://github.com/HYNazism/The-Crown/releases/latest) and check the assets attached to the version you want.
-- **Android:** the `.apk` asset is the direct-install package.
-- **Windows:** the workflow publishes a `.exe` launcher and a portable `.zip`. The Electron `.exe` depends on its companion runtime files; use the complete portable archive rather than treating the single `.exe` as a self-contained installer.
-- **Linux and macOS:** use the platform archive supplied with the release and extract its full contents before launching.
-- **Web/PWA:** the web archive is a website bundle, not a desktop or mobile installer.
-
-A successful workflow run is required before its release files are available. Device and browser compatibility can vary; check the release notes and test on the target device.
+فایل‌های انتشار پس از موفقیت گردش‌کار در دسترس قرار می‌گیرند. سازگاری و کارایی به دستگاه و مرورگر بستگی دارد؛ پیش از انتشار عمومی، نسخه را روی دستگاه مقصد آزمایش کنید.
